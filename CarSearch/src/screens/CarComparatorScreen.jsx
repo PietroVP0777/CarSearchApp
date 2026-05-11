@@ -31,12 +31,24 @@ export default function CarComparatorScreen({ navigation }) {
       return
     }
     console.log(marca,modelo,versao,marca2,modelo2,versao2)
+
+    navigation.navigate('ComparatorResult', {
+      marca,
+      modelo,
+      versao,
+      marca2,
+      modelo2,
+      versao2
+    })
+
     setMarca('')
     setModelo('')
     setVersao('')
     setMarca2('')
     setModelo2('')
     setVersao2('')
+
+    
   }
 
   return (

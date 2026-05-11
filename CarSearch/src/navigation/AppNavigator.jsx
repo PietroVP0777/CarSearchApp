@@ -5,6 +5,7 @@ import HomeScreen from "../screens/HomeScreen";
 import CarComparatorScreen from "../screens/CarComparatorScreen";
 import SearchNavigator from "./SearchNavigator";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import ComparatorNavigator from "./ComparatorNavigator";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -41,8 +42,8 @@ export default function AppNavigator() {
             ),
           }}
           screenOptions={{ headerShown: false }}
-          name="Compare"
-          component={CarComparatorScreen}
+          name="Comparator"
+          component={ComparatorNavigator}
         />
       </Tab.Navigator>
     </NavigationContainer>
