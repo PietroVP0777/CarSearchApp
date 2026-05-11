@@ -1,10 +1,139 @@
-import React from 'react'
-import { ScrollView, Text, View } from 'react-native'
+import React, { useState } from 'react'
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  Image,
+  ActivityIndicator,
+  ScrollView
+} from 'react-native'
 
-export default function CarComparatorScreen(){
+import { uploadImagem } from '../service/CarService'
+import * as ImagePicker from 'expo-image-picker';
+import CarInfosComponent from '../components/CarInfosComponent';
+
+export default function CarComparatorScreen({ navigation }) {
+  const [marca, setMarca] = useState('')
+  const [modelo, setModelo] = useState('')
+  const [versao, setVersao] = useState('')
+  const [marca2, setMarca2] = useState('')
+  const [modelo2, setModelo2] = useState('')
+  const [versao2, setVersao2] = useState('')
+  
+
+  function handleAvancar() {
+    if (!marca || !modelo || !versao || !marca2 || !modelo2 || !versao2) {
+      alert("Preencha todos os campos")
+      return
+    }
+    console.log(marca,modelo,versao,marca2,modelo2,versao2)
+    setMarca('')
+    setModelo('')
+    setVersao('')
+    setMarca2('')
+    setModelo2('')
+    setVersao2('')
+  }
+
   return (
-    <ScrollView style={{backgroundColor: '#0F172A', height: "100%"}}>
-        <Text style={{color: '#fff'}}> CarComparatorScreen </Text>
-    </ScrollView>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView>
+      <Image
+        source={require("../../assets/fordLogo.png")}
+        style={styles.logo}
+      />
+
+      <Text style={styles.title}>CarSearch</Text>
+      <Text style={styles.subtitle}>
+        Compare veículos
+      </Text>
+
+      <View style={styles.form}>
+        <CarInfosComponent marca={marca} modelo={modelo} versao={versao} setMarca={setMarca} setModelo={setModelo} setVersao={setVersao} />
+        <Text style={styles.formXtext}>X</Text>
+        <CarInfosComponent marca={marca2} modelo={modelo2} versao={versao2} setMarca={setMarca2} setModelo={setModelo2} setVersao={setVersao2} />
+      </View>
+      <TouchableOpacity style={styles.button} onPress={handleAvancar}>
+                  <Text style={styles.buttonText}>Avançar</Text>
+                </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0F172A',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    textAlign: 'center'
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#94A3B8',
+    textAlign: 'center',
+    marginBottom: 20
+  },
+  form: {
+    gap: 8,
+    marginTop: 20,
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  formXtext:{
+      color: '#FFFFFF',
+      fontSize: 12
+  },
+  button: {
+    backgroundColor: '#2563EB',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  buttonDisabled: {
+    opacity: 0.6
+  },
+  buttonText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 16
+  },
+  logo: {
+    width: 200,
+    height: 100,
+    alignSelf: 'center',
+    marginBottom: 10
+  },
+  preview: {
+    width: '100%',
+    height: 180,
+    borderRadius: 10,
+    marginTop: 15,
+  },
+  previewLoading: {
+    width: '100%',
+    height: 180,
+    borderRadius: 10,
+    marginTop: 15,
+    filter: 'blur(5px)'
+  }
+})
