@@ -89,7 +89,7 @@ export default function HomeScreen({ navigation }) {
         style={styles.logo}
       />
 
-      <Text style={styles.title}>CarSearch</Text>
+      <Text style={styles.title}>CarSearch TESTE</Text>
       <Text style={styles.subtitle}>
         Encontre veículos da concorrência com precisão
       </Text>
