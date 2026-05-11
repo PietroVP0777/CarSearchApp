@@ -73,7 +73,7 @@ export default function CarComparatorScreen({ navigation }) {
         <CarInfosComponent marca={marca2} modelo={modelo2} versao={versao2} setMarca={setMarca2} setModelo={setModelo2} setVersao={setVersao2} />
       </View>
       <TouchableOpacity style={styles.button} onPress={handleAvancar}>
-                  <Text style={styles.buttonText}>Avançar</Text>
+                  <Text style={styles.buttonText}>Comparar</Text>
                 </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>

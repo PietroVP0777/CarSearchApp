@@ -9,6 +9,7 @@ export default function CarInfosComponent({ marca, modelo, versao, setMarca, set
         style={styles.input}
         value={marca}
         onChangeText={setMarca}
+        maxLength={25}
       />
 
       <TextInput
@@ -17,6 +18,7 @@ export default function CarInfosComponent({ marca, modelo, versao, setMarca, set
         style={styles.input}
         value={modelo}
         onChangeText={setModelo}
+        maxLength={35}
       />
 
       <TextInput
@@ -25,6 +27,7 @@ export default function CarInfosComponent({ marca, modelo, versao, setMarca, set
         style={styles.input}
         value={versao}
         onChangeText={setVersao}
+        maxLength={50}
       />
     </View>
   );
