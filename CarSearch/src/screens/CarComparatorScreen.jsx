@@ -12,8 +12,7 @@ import {
   ScrollView
 } from 'react-native'
 
-import { uploadImagem } from '../service/CarService'
-import * as ImagePicker from 'expo-image-picker';
+import { compararVeiculos } from '../service/CarService';
 import CarInfosComponent from '../components/CarInfosComponent';
 
 export default function CarComparatorScreen({ navigation }) {
@@ -25,20 +24,27 @@ export default function CarComparatorScreen({ navigation }) {
   const [versao2, setVersao2] = useState('')
   
 
-  function handleAvancar() {
+  async function handleComparar() {
     if (!marca || !modelo || !versao || !marca2 || !modelo2 || !versao2) {
       alert("Preencha todos os campos")
       return
     }
     console.log(marca,modelo,versao,marca2,modelo2,versao2)
-
-    navigation.navigate('ComparatorResult', {
+    const carros = {
       marca,
       modelo,
       versao,
       marca2,
       modelo2,
       versao2
+    }
+
+    const resultado = await compararVeiculos(carros)
+    console.log(resultado)
+
+    navigation.navigate('ComparatorResult', {
+      carros,
+      resultado
     })
 
     setMarca('')
@@ -72,7 +78,7 @@ export default function CarComparatorScreen({ navigation }) {
         <Text style={styles.formXtext}>X</Text>
         <CarInfosComponent marca={marca2} modelo={modelo2} versao={versao2} setMarca={setMarca2} setModelo={setModelo2} setVersao={setVersao2} />
       </View>
-      <TouchableOpacity style={styles.button} onPress={handleAvancar}>
+      <TouchableOpacity style={styles.button} onPress={handleComparar}>
                   <Text style={styles.buttonText}>Comparar</Text>
                 </TouchableOpacity>
       </ScrollView>

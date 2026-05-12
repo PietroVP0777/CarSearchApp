@@ -25,12 +25,8 @@ export default function CarComparatorResultScreen() {
 ]
 
   const {
-    marca,
-    modelo,
-    versao,
-    marca2,
-    modelo2,
-    versao2
+    carros,
+    resultado
   } = route.params;
 
   return (
@@ -50,10 +46,10 @@ export default function CarComparatorResultScreen() {
 
           <View style={styles.carView}>
             <Text style={styles.brand}>
-              {marca?.toUpperCase()}
+              {carros.marca?.toUpperCase()}
             </Text>
             <Text style={styles.model}>
-              {modelo} {versao}
+              {carros.modelo} {carros.versao}
             </Text>
           </View>
 
@@ -62,10 +58,10 @@ export default function CarComparatorResultScreen() {
 
           <View style={styles.carView}>
             <Text style={styles.brand}>
-              {marca2?.toUpperCase()}
+              {carros.marca2?.toUpperCase()}
             </Text>
             <Text style={styles.model}>
-              {modelo2} {versao2}
+              {carros.modelo2} {carros.versao2}
             </Text>
           </View>
 
