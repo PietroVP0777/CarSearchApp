@@ -25,14 +25,12 @@ export default function ResultScreen({navigation}) {
   }
 
   useEffect(() => {
-    console.log("Dados para pesquisa de imagem:", dados);
     pesquisarImagem();
   }, []);
 
   const pesquisarImagem = async () => {
     try {
       const resultadoImagem = await buscarImagem(dados);
-      console.log("Resultado da pesquisa de imagem:", resultadoImagem);
       setImagemUrl(resultadoImagem);
     } catch (error) {
       console.error("Erro ao pesquisar imagem:", error);
@@ -63,7 +61,7 @@ export default function ResultScreen({navigation}) {
             {resultado.marca.toUpperCase()}
           </Text>
           <Text style={styles.subtitle}>
-            {resultado.modelo} {resultado.versao}
+            {resultado.modelo.toUpperCase()} {resultado.versao.toUpperCase()}
           </Text>
         </View>
 
@@ -161,6 +159,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 15,
+    alignSelf: "center",
   },
 
   specItem: {

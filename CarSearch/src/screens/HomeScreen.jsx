@@ -62,9 +62,6 @@ export default function HomeScreen({ navigation }) {
       setLoading(true)
 
       const response = await uploadImagem(file)
-
-      console.log("RESPOSTA:", response)
-
       setMarca(response.marca)
       setModelo(response.modelo)
       setVersao(response.versao)

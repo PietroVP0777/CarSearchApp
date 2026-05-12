@@ -22,39 +22,46 @@ export default function CarComparatorScreen({ navigation }) {
   const [marca2, setMarca2] = useState('')
   const [modelo2, setModelo2] = useState('')
   const [versao2, setVersao2] = useState('')
-  
+  const [loading, setLoading] = useState(false)
 
   async function handleComparar() {
     if (!marca || !modelo || !versao || !marca2 || !modelo2 || !versao2) {
       alert("Preencha todos os campos")
       return
     }
-    console.log(marca,modelo,versao,marca2,modelo2,versao2)
-    const carros = {
-      marca,
-      modelo,
-      versao,
-      marca2,
-      modelo2,
-      versao2
+
+    setLoading(true)
+
+    try {
+      const carros = {
+        marca,
+        modelo,
+        versao,
+        marca2,
+        modelo2,
+        versao2
+      }
+
+      const resultado = await compararVeiculos(carros)
+
+      navigation.navigate('ComparatorResult', {
+        carros,
+        resultado
+      })
+
+      setMarca('')
+      setModelo('')
+      setVersao('')
+      setMarca2('')
+      setModelo2('')
+      setVersao2('')
+
+    } catch (error) {
+      console.log(error)
+      alert("Erro ao comparar veículos")
+    } finally {
+      setLoading(false)
     }
-
-    const resultado = await compararVeiculos(carros)
-    console.log(resultado)
-
-    navigation.navigate('ComparatorResult', {
-      carros,
-      resultado
-    })
-
-    setMarca('')
-    setModelo('')
-    setVersao('')
-    setMarca2('')
-    setModelo2('')
-    setVersao2('')
-
-    
   }
 
   return (
@@ -63,24 +70,50 @@ export default function CarComparatorScreen({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView>
-      <Image
-        source={require("../../assets/fordLogo.png")}
-        style={styles.logo}
-      />
+        <Image
+          source={require("../../assets/fordLogo.png")}
+          style={styles.logo}
+        />
 
-      <Text style={styles.title}>CarSearch</Text>
-      <Text style={styles.subtitle}>
-        Compare veículos
-      </Text>
+        <Text style={styles.title}>CarSearch</Text>
+        <Text style={styles.subtitle}>
+          Compare veículos
+        </Text>
 
-      <View style={styles.form}>
-        <CarInfosComponent marca={marca} modelo={modelo} versao={versao} setMarca={setMarca} setModelo={setModelo} setVersao={setVersao} />
-        <Text style={styles.formXtext}>X</Text>
-        <CarInfosComponent marca={marca2} modelo={modelo2} versao={versao2} setMarca={setMarca2} setModelo={setModelo2} setVersao={setVersao2} />
-      </View>
-      <TouchableOpacity style={styles.button} onPress={handleComparar}>
-                  <Text style={styles.buttonText}>Comparar</Text>
-                </TouchableOpacity>
+        <View style={styles.form}>
+          <CarInfosComponent
+            marca={marca}
+            modelo={modelo}
+            versao={versao}
+            setMarca={setMarca}
+            setModelo={setModelo}
+            setVersao={setVersao}
+          />
+
+          <Text style={styles.formXtext}>X</Text>
+
+          <CarInfosComponent
+            marca={marca2}
+            modelo={modelo2}
+            versao={versao2}
+            setMarca={setMarca2}
+            setModelo={setModelo2}
+            setVersao={setVersao2}
+          />
+        </View>
+
+        <TouchableOpacity
+          style={[styles.button, loading && styles.buttonDisabled]}
+          onPress={handleComparar}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.buttonText}>Comparar</Text>
+          )}
+        </TouchableOpacity>
+
       </ScrollView>
     </KeyboardAvoidingView>
   )

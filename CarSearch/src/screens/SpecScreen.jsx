@@ -74,7 +74,7 @@ export default function SpecScreen({ navigation }) {
             {marca.toUpperCase()}
           </Text>
           <Text style={styles.subtitle}>
-            {modelo} {versao}
+            {modelo.toUpperCase()} {versao.toUpperCase()}
           </Text>
         </View>
 

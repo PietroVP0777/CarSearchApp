@@ -4,7 +4,7 @@ export default function CarInfosComponent({ marca, modelo, versao, setMarca, set
   return (
     <View style={styles.form}>
       <TextInput
-        placeholder="Marca"
+        placeholder="Marca (ex: Ford)"
         placeholderTextColor="#94A3B8"
         style={styles.input}
         value={marca}
@@ -13,7 +13,7 @@ export default function CarInfosComponent({ marca, modelo, versao, setMarca, set
       />
 
       <TextInput
-        placeholder="Modelo"
+        placeholder="Modelo (ex: Ranger)"
         placeholderTextColor="#94A3B8"
         style={styles.input}
         value={modelo}
@@ -22,7 +22,7 @@ export default function CarInfosComponent({ marca, modelo, versao, setMarca, set
       />
 
       <TextInput
-        placeholder="Versão"
+        placeholder="Versão (ex: Raptor)"
         placeholderTextColor="#94A3B8"
         style={styles.input}
         value={versao}
