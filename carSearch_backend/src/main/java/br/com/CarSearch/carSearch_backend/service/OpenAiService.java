@@ -28,9 +28,6 @@ public class OpenAiService {
     @Value("${openai.model}")
     private String model;
 
-    @Value("${openai.image.model}")
-    private String imageModel;
-
     public OpenAiService() {
         this.webClient = WebClient.builder()
                 .baseUrl("https://api.openai.com")
@@ -281,54 +278,6 @@ public class OpenAiService {
                 .block();
 
         return extrairTextoResposta(resposta);
-    }
-
-    public String gerarImagemCarro(ImageResponseDTO dto) {
-        try {
-            String prompt = """
-                    Gere uma imagem automotiva realista em estilo fotografia de estúdio.
-                    O veículo deve representar fielmente este carro:
-                    Marca: %s
-                    Modelo: %s
-                    Versão: %s
-
-                    Regras:
-                    - mostre o carro inteiro em visão 3/4 frontal
-                    - fundo limpo e neutro
-                    - sem texto, logo inventado, placa legível ou pessoas
-                    - aparência de foto realista para catálogo automotivo
-                    """.formatted(dto.marca(), dto.modelo(), dto.versao());
-
-            Map<String, Object> requestBody = Map.of(
-                    "model", imageModel,
-                    "prompt", prompt,
-                    "size", "1024x1024",
-                    "n", 1
-            );
-
-            String resposta = webClient.post()
-                    .uri("/v1/images/generations")
-                    .header("Authorization", "Bearer " + apiKey)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-
-            JsonNode image = objectMapper.readTree(resposta).path("data").get(0);
-            String base64 = image.path("b64_json").asText();
-
-            if (!base64.isBlank()) {
-                return "data:image/png;base64," + base64;
-            }
-
-            String url = image.path("url").asText();
-            return url.isBlank() ? null : url;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     public ImageResponseDTO analisarImagem(String base64Image) {

@@ -15,9 +15,11 @@ import java.util.List;
 public class SearchService {
 
     private final OpenAiService service;
+    private final GoogleImageSearchService imageSearchService;
 
-    public SearchService(OpenAiService service){
+    public SearchService(OpenAiService service, GoogleImageSearchService imageSearchService){
         this.service = service;
+        this.imageSearchService = imageSearchService;
     }
 
 
@@ -41,7 +43,7 @@ public class SearchService {
     }
 
     public String pesquisarImagem(ImageResponseDTO dto){
-        return service.gerarImagemCarro(dto);
+        return imageSearchService.buscarImagem(dto);
     }
 
 
