@@ -14,10 +14,10 @@ import java.util.List;
 @Service
 public class SearchService {
 
-    private final GeminiService service;
+    private final OpenAiService service;
     private final PexelsService pexelsService;
 
-    public SearchService(GeminiService service, PexelsService pexelsService){
+    public SearchService(OpenAiService service, PexelsService pexelsService){
         this.service = service;
         this.pexelsService = pexelsService;
     }
