@@ -31,6 +31,7 @@ public class OpenAiService {
     public OpenAiService() {
         this.webClient = WebClient.builder()
                 .baseUrl("https://api.openai.com")
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024))
                 .build();
     }
 
