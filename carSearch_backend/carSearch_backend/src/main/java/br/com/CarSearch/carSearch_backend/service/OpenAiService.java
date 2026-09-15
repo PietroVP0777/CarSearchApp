@@ -11,21 +11,26 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class GeminiService {
+public class OpenAiService {
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${gemini.api.key}")
+    @Value("${openai.api.key}")
     private String apiKey;
 
-    public GeminiService() {
+    @Value("${openai.model}")
+    private String model;
+
+    public OpenAiService() {
         this.webClient = WebClient.builder()
-                .baseUrl("https://generativelanguage.googleapis.com")
+                .baseUrl("https://api.openai.com")
                 .build();
     }
 
@@ -89,41 +94,18 @@ public class GeminiService {
                     %s
                     """.formatted(marca, modelo, versao, pedidoUsuario);
 
-            String requestBody = """
-                    {
-                      "contents": [
-                        {
-                          "parts": [
-                            {
-                              "text": %s
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                    """.formatted(escapeJson(prompt));
+            String jsonLimpo = chamarOpenAiTexto(prompt);
 
-            String resposta = webClient.post()
-                    .uri("/v1beta/models/gemini-2.5-flash:generateContent")
-                    .header("x-goog-api-key", apiKey)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-
-            String jsonLimpo = extrairTextoResposta(resposta);
-
-            List<EspecDTO> respostaGemini = objectMapper.readValue(
+            List<EspecDTO> respostaOpenAi = objectMapper.readValue(
                     jsonLimpo,
                     new TypeReference<List<EspecDTO>>() {}
             );
 
             if (listaVazia) {
-                return garantirSpecsImportantes(respostaGemini);
+                return garantirSpecsImportantes(respostaOpenAi);
             }
 
-            return garantirTodasEspecificacoes(especificacoesUsuario, respostaGemini);
+            return garantirTodasEspecificacoes(especificacoesUsuario, respostaOpenAi);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -141,11 +123,11 @@ public class GeminiService {
 
     private List<EspecDTO> garantirTodasEspecificacoes(
             List<String> solicitadas,
-            List<EspecDTO> respostaGemini) {
+            List<EspecDTO> respostaOpenAi) {
 
-        Map<String, String> mapaResposta = respostaGemini == null
+        Map<String, String> mapaResposta = respostaOpenAi == null
                 ? new HashMap<>()
-                : respostaGemini.stream()
+                : respostaOpenAi.stream()
                 .collect(Collectors.toMap(
                         e -> e.nome().toLowerCase(),
                         e -> e.valor(),
@@ -207,14 +189,7 @@ public class GeminiService {
 
         JsonNode root = objectMapper.readTree(respostaApi);
 
-        String texto = root
-                .path("candidates")
-                .get(0)
-                .path("content")
-                .path("parts")
-                .get(0)
-                .path("text")
-                .asText();
+        String texto = extrairOutputText(root);
 
         return texto
                 .replace("```json", "")
@@ -222,13 +197,86 @@ public class GeminiService {
                 .trim();
     }
 
-    private String escapeJson(String texto) {
-        return "\"" +
-                texto.replace("\\", "\\\\")
-                        .replace("\"", "\\\"")
-                        .replace("\n", "\\n")
-                        .replace("\r", "") +
-                "\"";
+    private String extrairOutputText(JsonNode node) {
+        if (node == null || node.isMissingNode() || node.isNull()) {
+            return "";
+        }
+
+        if (node.has("type")
+                && "output_text".equals(node.path("type").asText())
+                && node.has("text")) {
+            return node.path("text").asText();
+        }
+
+        if (node.isArray()) {
+            for (JsonNode child : node) {
+                String texto = extrairOutputText(child);
+                if (!texto.isBlank()) {
+                    return texto;
+                }
+            }
+        }
+
+        if (node.isObject()) {
+            for (JsonNode child : node) {
+                String texto = extrairOutputText(child);
+                if (!texto.isBlank()) {
+                    return texto;
+                }
+            }
+        }
+
+        return "";
+    }
+
+    private String chamarOpenAiTexto(String prompt) throws Exception {
+        Map<String, Object> requestBody = Map.of(
+                "model", model,
+                "input", prompt
+        );
+
+        String resposta = webClient.post()
+                .uri("/v1/responses")
+                .header("Authorization", "Bearer " + apiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        return extrairTextoResposta(resposta);
+    }
+
+    private String chamarOpenAiImagem(String prompt, String base64Image) throws Exception {
+        Map<String, Object> requestBody = Map.of(
+                "model", model,
+                "input", List.of(
+                        Map.of(
+                                "role", "user",
+                                "content", List.of(
+                                        Map.of(
+                                                "type", "input_text",
+                                                "text", prompt
+                                        ),
+                                        Map.of(
+                                                "type", "input_image",
+                                                "image_url", "data:image/jpeg;base64," + base64Image
+                                        )
+                                )
+                        )
+                )
+        );
+
+        String resposta = webClient.post()
+                .uri("/v1/responses")
+                .header("Authorization", "Bearer " + apiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        return extrairTextoResposta(resposta);
     }
 
     public ImageResponseDTO analisarImagem(String base64Image) {
@@ -254,36 +302,7 @@ public class GeminiService {
             Se não souber algum campo, use "Não identificado".
         """;
 
-            String requestBody = """
-                {
-                  "contents": [
-                    {
-                      "parts": [
-                        {
-                          "text": %s
-                        },
-                        {
-                          "inline_data": {
-                            "mime_type": "image/jpeg",
-                            "data": "%s"
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-                """.formatted(escapeJson(prompt), base64Image);
-
-            String resposta = webClient.post()
-                    .uri("/v1beta/models/gemini-2.5-flash:generateContent")
-                    .header("x-goog-api-key", apiKey)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-
-            String jsonLimpo = extrairTextoResposta(resposta);
+            String jsonLimpo = chamarOpenAiImagem(prompt, base64Image);
 
             return objectMapper.readValue(jsonLimpo, ImageResponseDTO.class);
 
@@ -335,30 +354,7 @@ public class GeminiService {
                     dto.versao2()
             );
 
-            String requestBody = """
-                {
-                  "contents": [
-                    {
-                      "parts": [
-                        {
-                          "text": %s
-                        }
-                      ]
-                    }
-                  ]
-                }
-                """.formatted(escapeJson(prompt));
-
-            String resposta = webClient.post()
-                    .uri("/v1beta/models/gemini-2.5-flash:generateContent")
-                    .header("x-goog-api-key", apiKey)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-
-            String jsonLimpo = extrairTextoResposta(resposta);
+            String jsonLimpo = chamarOpenAiTexto(prompt);
 
             return objectMapper.readValue(
                     jsonLimpo,
